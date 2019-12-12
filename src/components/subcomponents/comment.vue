@@ -2,8 +2,8 @@
     <div class="cmt-container">
         <h4>发表评论</h4>
         <hr>
-        <textarea placeholder="碰我一下（最多120字）" maxlength="120"></textarea>
-        <mt-button type="primary" size="large">发表评论</mt-button>
+        <textarea placeholder="碰我一下（最多120字）" maxlength="120" v-model="msg"></textarea>
+        <mt-button type="primary" size="large" @click="postComment">发表评论</mt-button>
 
         <div class="cmt-list">
             <div class="cmt-item" v-for="(item,i) in comments" :key="item.add_time">
@@ -25,7 +25,8 @@ export default {
     data(){
         return{
             pageIndex:1,//默认第一页
-            comments:[]
+            comments:[],
+            msg:""//评论输入的内容
         };
     },
     created(){
@@ -47,6 +48,34 @@ export default {
         getMore(){//加载更多
             this.pageIndex++;
             this.getComments();
+        },
+        //发表评论
+        //1,url地址
+        //2,数据
+        //3，表单格式
+        postComment(){
+            if(this.msg.trim().length === 0){
+                return Toast("评论内容不能为空！")
+            }
+            this.$http
+            .post('api/postcomment/'+this.$route.params.id,{
+                content:this.msg.trim()
+            })
+            .then(function(result){
+                if (result.body.status === 0) {
+                // 成功了拼接处一个评论对象
+                var cmt ={
+                    user_name:"粘豆包",
+                    add_time:Date.now(),
+                    content:this.msg.trim()
+                }
+                this.comments.unshift(cmt);
+                this.msg=""
+                } else {
+                // 失败的
+                Toast("失败。。。");
+                }
+            })
         }
     },
     props:["id"]
